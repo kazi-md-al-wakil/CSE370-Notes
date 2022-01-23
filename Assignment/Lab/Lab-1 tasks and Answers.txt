@@ -1,0 +1,27 @@
+>>>>>>>Questions<<<<<<
+
+
+1. Change the column name “influence_count”. The new name should be “followers” and the data type should be integer. 
+2. Change the column name “member_since”. The new name should be “joining_date” and the data type should be date. 
+3. Show the name, email, and follower number of the developers.
+4. There is a formula to find the efficiency of the developers. Efficiency = ((followers*100/1000000) * (multipliers*100/20))/100.
+    Find the efficiency of each developer and show them in a column named “Efficiency”.
+5. Change the Data Type of “multiplier” from integer to character type. Keep in mind that the multiplier cannot be greater than 20. 
+
+______________________________________
+>>>>>>>Answers<<<<<< 
+
+MySQL query for Task 1 *
+ALTER TABLE influencer CHANGE COLUMN influence_count followers int;
+
+MySQL query for Task 2 *
+ALTER TABLE influencer CHANGE COLUMN member_since joining_date date;
+
+MySQL query for Task 3 *
+SELECT name, email, followers FROM influencer;
+
+MySQL query for Task 4 *
+SELECT member_id, name, (((followers*100/1000000) * (multiplier*100/20))/100) as Efficiency FROM influencer;
+
+MySQL query for Task 5 *
+ALTER TABLE influencer MODIFY COLUMN multiplier char(2) CHECK (multiplier<20);

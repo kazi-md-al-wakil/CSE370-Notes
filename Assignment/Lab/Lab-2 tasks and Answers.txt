@@ -1,0 +1,65 @@
+>>>>> Questions <<<<<
+Write the queries of the tasks given below.
+
+1. Find all the unique multipliers in the table and show them in descending order.
+2. Show all the unique dates of the users joining in ascending order.
+3. Find all ids and email addresses where the TLD (Top Level Domain) is ‘com’ (ends with ‘com’)
+4. Show the name and email of the latest 5 members
+5. Find the total number of users in the table.
+6. Count number of users in each multiplier who has joined after the month "April"
+7. Find the average length of all the names. 
+8. Find the number of unique TLDs of email addresses.  
+9. Show the users according to their joining date (the user who joined first will be at the top and so on)
+10. Show the name of the user who has the highest influence_count among the users  joined after May 2020
+11. Show the name of the user with the maximum multiplier among the users whose influencer counts are less than 700000. 
+12. Find all the unique multipliers among the members whose influence count is less than 900000. 
+13. Find the average of the influence count but only consider the members who joined before 11 June 2020.
+13. Find the id, name, email, and multiplier of those members whose influence count is within the range 700000 and 990000 and who has become a member of the platform after 18 May 2020.
+15. Retrieve the id, name, email, and influence count of the users who have all these characters -  "u,o,v,n,s,m" in their name. 
+
+>>>>> Answers <<<<<
+
+MySQL query for Task 1 
+SELECT DISTINCT multiplier FROM influencer ORDER BY multiplier DESC; 
+
+MySQL query for Task 2 
+SELECT DISTINCT joining_date FROM influencer ORDER BY joining_date; 
+
+MySQL query for Task 3 
+SELECT member_id, email FROM influencer WHERE email LIKE '%.com'; 
+
+MySQL query for Task 4 
+SELECT name, email FROM influencer ORDER BY joining_date DESC LIMIT 5; 
+
+MySQL query for Task 5 
+SELECT COUNT(*) as Total_Users FROM influencer; 
+
+MySQL query for Task 6 
+SELECT multiplier, COUNT(*) as Total_Users FROM influencer WHERE joining_date > '2020-4-30' GROUP BY multiplier;
+
+MySQL query for Task 7 
+SELECT AVG(LENGTH(name)) FROM influencer;
+
+MySQL query for Task 8 
+SELECT SUBSTRING_INDEX(email, '@', -1) as domain, COUNT(*) FROM influencer GROUP BY domain;
+
+MySQL query for Task 9 
+SELECT name FROM influencer ORDER BY joining_date;
+
+MySQL query for Task 10 
+SELECT name FROM influencer WHERE joining_date > '2020-05-01' ORDER BY followers DESC LIMIT 1;
+
+MySQL query for Task 11 
+ SELECT name FROM influencer WHERE followers<700000 ORDER BY multiplier DESC LIMIT 1;
+
+MySQL query for Task 12 
+SELECT DISTINCT multiplier FROM influencer WHERE followers < 900000;
+
+MySQL query for Task 13 
+ SELECT AVG(followers) as average FROM influencer WHERE joining_date < '2020-06-11';
+
+MySQL query for Task 14 
+SELECT member_id, name, email, multiplier FROM influencer WHERE followers between 700000 and 990000 AND joining_date > '2020-05-18';
+
+MySQL query for Task 15 
+SELECT member_id, name, email, followers FROM influencer WHERE name LIKE '%u%' AND name LIKE '%o%' AND name LIKE '%v%' AND name LIKE '%n%' AND name LIKE '%s%' AND name LIKE '%m%';

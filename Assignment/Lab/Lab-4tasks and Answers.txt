@@ -1,0 +1,75 @@
+>>>>>>Questions:<<<<<<
+Using  the bank database, write MySQL queries for the following tasks: 
+
+1.  Find the name and loan number of all customers having a loan at the Downtown branch. 
+2.  Find the names of branches whose assets are greater than the assets of some branch in Horseneck.
+3.  Find the number of depositors for each branch (your results should show branches with no deposits as 0).
+4.  Find all the possible pairs of customers who are from the same city. show in the format Customer1, Customer2, City
+5.  If the bank gives out 4% interest to all accounts, show the total interest across each branch. Print Branch_name, Total_Interest
+6.  Find account numbers with the highest balances for each city in the database
+7.  Find the names of branches whose assets are less than the assets of all branches in Brooklyn.
+8.  Show the loan number, loan amount, and name of customers who have the top 5 highest loan amounts. The data should be sorted by increasing amounts, then decreasing loan numbers in case of the same loan amount. [Hint for top 5 check the "limit" keyword in mysql]
+9.  Find the names of customers with an account and also a loan at the Perryridge branch.
+10. Find the total loan amount of all customers having at least 2 loans from the bank.
+
+________________________________________________________________________________________________________________________________________________________________________
+>>>>> Data <<<<<<
+create table customer (customer_id varchar(10) not null, customer_name varchar(20) not null, customer_street varchar(30), customer_city varchar(30), primary key (customer_id)) ;
+create table branch (branch_name varchar(15), branch_city varchar(30), assets int, primary key (branch_name), check (assets >= 0)) ;
+create table account(branch_name varchar(15), account_number varchar(10) not null, balance int, primary key (account_number), check (balance >= 0)) ;
+
+create table loan (loan_number varchar(10) not null,
+branch_name varchar(15), amount int,
+primary key (loan_number));
+
+create table depositor (customer_id varchar(10) not null,
+account_number varchar(10) not null,
+primary key (customer_id,account_number), foreign key (customer_id) references customer(customer_id),
+foreign key (account_number) references account(account_number));
+
+create table borrower (customer_id varchar(10) not null,
+loan_number varchar(10) not null,
+primary key (customer_id, loan_number), foreign key (customer_id) references customer(customer_id),
+foreign key (loan_number) references loan(loan_number));
+
+
+insert into customer values
+('C-101','Jones', 'Main', 'Harrison'), ('C-201','Smith', 'North', 'Rye'),('C-211','Hayes', 'Main', 'Harrison'), ('C-212','Curry', 'North', 'Rye'),('C-215','Lindsay', 'Park', 'Pittsfield'),('C-220','Turner', 'Putnam', 'Stamford'),('C-222','Williams', 'Nassau', 'Princeton'),('C-225','Adams', 'Spring', 'Pittsfield'),('C-226','Johnson', 'Alma', 'Palo Alto'),('C-233','Glenn', 'Sand Hill', 'Woodside'),('C-234','Brooks', 'Senator', 'Brooklyn'),('C-255','Green', 'Walnut', 'Stamford');
+insert into branch values
+('Downtown', 'Brooklyn',9000000), ('Redwood', 'Palo Alto',2100000), ('Perryridge', 'Horseneck',1700000), ('Mianus', 'Horseneck',400000), ('Round Hill', 'Horseneck',8000000), ('Pownal', 'Bennington',300000), ('North Town', 'Rye',3700000), ('Brighton', 'Brooklyn',7100000);
+insert into account values
+('Downtown','A-101',500), ('Mianus','A-215',700) ,('Perryridge','A-102',400), ('Round Hill','A-305',350), ('Brighton','A-201',900), ('Redwood','A-222',700), ('Brighton','A-217',750);
+
+insert into loan values
+('L-17', 'Downtown', 1000),('L-23', 'Redwood', 2000), ('L-15', 'Perryridge', 1500), ('L-14', 'Downtown', 1500), ('L-93', 'Mianus', 500), ('L-11', 'Round Hill', 900), ('L-16', 'Perryridge', 1300);
+insert into depositor values
+('C-226', 'A-101'), ('C-201', 'A-215'), ('C-211', 'A-102'), ('C-220', 'A-305'), ('C-226', 'A-201'), ('C-101', 'A-217'),('C-215', 'A-222');
+insert into borrower values
+('C-101', 'L-17'), ('C-201', 'L-23'), ('C-211', 'L-15'), ('C-226', 'L-14'), ('C-212', 'L-93'), ('C-201', 'L-11'), ('C-222', 'L-17'), ('C-225', 'L-16');
+
+________________________________________________________________________________________________________________________________________________________________________
+>>>>>ANSWERS:<<<<<<
+
+1. SELECT  C.customer_name, B.loan_number FROM customer C, loan L, borrower B WHERE C.customer_id = B.customer_id AND B.loan_number = L.loan_number AND L.branch_name = "Downtown"; (Right) 
+
+2. SELECT DISTINCT T.branch_name FROM branch T, branch S WHERE T.assets > S.assets And S.branch_city = “Horseneck”; (Right) 
+
+3. SELECT B.branch_name, COUNT(D.account_number) FROM ((depositor D INNER JOIN account A ON A.account_number = D.account_number) RIGHT JOIN branch B ON B.branch_name = A.branch_name) GROUP BY B.branch_name;(Right)
+
+4. SELECT T1.customer_name AS Customer1, T2.customer_name AS Customer2, T1.customer_city AS City FROM Customer T1, Customer T2 WHERE (T2.customer_name != T1.customer_name AND T1.customer_city = T2.customer_city) GROUP BY T1.customer_city; (Right)
+   
+5. SELECT branch_name, SUM(balance*(4/100)) AS Total_Interest FROM account GROUP BY branch_name; (Right)
+   
+
+6. SELECT A.account_number, A.balance, B.branch_city FROM account A INNER JOIN branch B on A.branch_name = B.branch_name WHERE A.balance in (SELECT max(A.balance) FROM account A INNER JOIN branch B on A.branch_name = B.branch_name GROUP BY B.branch_city); (Right) 
+
+7. SELECT DISTINCT branch_name FROM branch WHERE assets < ALL (SELECT assets FROM branch WHERE branch_city = “Brooklyn”); (Right)
+
+8. SELECT * FROM (SELECT L.loan_number, L.amount, C.customer_name FROM customer C, borrower B, loan L WHERE C.customer_id = B.customer_id AND B.loan_number = L.loan_number ORDER BY L.amount DESC LIMIT 5) SUB ORDER BY SUB.amount, SUB.loan_number DESC; (Right)
+
+9. SELECT customer_name FROM customer C, depositor D, account A WHERE C.customer_id = D.customer_id AND D.account_number = A.account_number AND A.branch_name = "Perryridge" AND customer_name IN (SELECT customer_name FROM customer C, borrower B, loan L WHERE C.customer_id = B.customer_id AND B.loan_number = L.loan_number AND L.branch_name = "Perryridge"); (Right)
+
+10. SELECT C.customer_name, B.customer_id, SUM(amount) FROM (customer C INNER JOIN borrower B on B.customer_id = C.customer_id) INNER JOIN loan L ON L.loan_number = B.loan_number GROUP BY B.customer_id HAVING count(*) >=2; (Right)
+    SELECT borrower.customer_id, sum(amount) from borrower, loan WHERE borrower.loan_number = loan.loan_number GROUP BY borrower.customer_id HAVING COUNT(*) >= 2;
+
+________________________________________________________________________________________________________________________________________________________________________
